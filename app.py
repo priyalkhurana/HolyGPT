@@ -59,7 +59,7 @@ def page_setup(title, icon):
 st.write('''If you could ask Bhagavad Gita a question, what would it be?''')
 st.markdown('\n')
 st.markdown('\n')
-def get_embedding(text, model="text-davinci-002"):
+def get_embedding(text, model="text-gpt-2"):
    text = text.replace("\n", " ")
    return openai.Embedding.create(input = [text], model=model)['data'][0]['embedding']
 
