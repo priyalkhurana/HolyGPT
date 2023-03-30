@@ -3,20 +3,25 @@ import numpy as np
 import openai
 import pinecone
 import streamlit as st
-import secrets as sec
+import secrets as secrets
 import time
 import os
+import toml
+
+secrets = toml.load('secrets.toml')
+#api_key = secrets['openai.api_key']['pinecone_api_key']
+with open('secrets.toml', 'r') as f:
+    secrets = toml.load(f)
+
+# Get the OpenAI and Pinecone API keys from the secrets dictionary
+openai_api_key = secrets['openai']['openai_api_key']
+pinecone_api_key = secrets['pinecone']['pinecone_api_key']
+
+pinecone.init(api_key=pinecone_api_key, environment='us-west4-gcp')
+
+openai.api_key = openai_api_key
 
 
-
-from sentence_transformers import SentenceTransformer
-
-
-
-pinecone_api_key = st.secrets['pinecone_api_key']
-pinecone.init(
-    api_key=pinecone_api_key, 
-              environment='us-west4-gcp')
 
 index_name = 'holygpt'
 
@@ -29,7 +34,7 @@ if index_name not in pinecone.list_indexes():
     )
 st.session_state_index = pinecone.Index(index_name)
 
-openai.api_key=st.secrets['openai_api_key']
+
 
 
 df_index=pd.read_csv('only_verses.csv')
