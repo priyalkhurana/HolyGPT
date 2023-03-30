@@ -47,14 +47,64 @@ df_index=pd.read_csv('only_verses.csv')
 st.write("""
 # GitaGPT
 """)
+def generate_chat_response(prompt):
+    response = openai.Completion.create(
+        engine="davinci",
+        prompt=prompt,
+        max_tokens=1024,
+        temperature=0.7,
+        n=1,
+        stop=None,
+        timeout=20,
+    )
+    message = response.choices[0].text.strip()
+    return message
+
+question = st.text_input("Ask a question or describe your situation below, and then press Enter.")
+
+def generate_prompt(question):
+    prompt = f"I am here to help you. What is your question or problem? {question}"
+    return prompt
+
+# Generate chat response
+if question:
+    prompt = generate_prompt(question)
+    message = generate_chat_response(prompt)
+    st.write("Bhagvad Gita says: ", message)
 
 
-st.write('''If you could ask Bhagavad Gita a question, what would it be?''')
-st.markdown('\n')
-st.markdown('\n')
-def get_embedding(text, model="text-embedding-ada-002"):
-   text = text.replace("\n", " ")
-   return openai.Embedding.create(input = [text], model=model)['data'][0]['embedding']
+def clear_text(textInput):
+
+    st.session_state[textInput] = ""
+
+def generate_response_davinci(question):
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=generate_prompt(question),
+        temperature=0.6,
+        max_tokens=2048
+    )
+    return response.choices[0].text
+
+def get_text():
+    input_text = st.text_input("Hello, ask me a question about life and philosophy.",placeholder="Type Your question here.", key=txtInputQuestion)
+    return input_text
+
+def page_setup(title, icon):
+    st.set_page_config(
+        page_title=title,
+        page_icon=icon,
+        layout='centered',
+        initial_sidebar_state='auto',
+        menu_items={
+            'About': 'About your application: **This is Bhagvad Gita GPT, a simple ChatGPT use case demo to show how one can easily leverage openAI APIs to create intelligent conversational experiences related to a specific topic.**'
+        }
+    )
+    st.sidebar.title('Creators :')
+    st.sidebar.markdown('PRIYAL KHURANA')
+    st.sidebar.write("DIVYANSH KUMAR")
+    st.sidebar.write("MITALI CHAUDHARY")
+
 
 def vector_similarity(x, y):
     """
@@ -62,6 +112,9 @@ def vector_similarity(x, y):
     Because OpenAI Embeddings are normalized to length 1, the cosine similarity is the same as the dot product.
     """
     return np.dot(np.array(x), np.array(y))
+def get_embedding(text, model="text-embedding-ada-002"):
+   text = text.replace("\n", " ")
+   return openai.Embedding.create(input = [text], model=model)['data'][0]['embedding']
 
 def card(context):
     return st.markdown(context)
@@ -121,64 +174,13 @@ if question != '':
     prompt = f'''{header}\nQuestion:{question}\nVerses:\n{verse_strings}\nAnswer:\n'''
 
     
-def generate_prompt(question):
-    prompt = f"I am here to help you. What is your question or problem? {question}"
-    return prompt
 
-def generate_chat_response(prompt):
-    response = openai.Completion.create(
-        engine="davinci",
-        prompt=prompt,
-        max_tokens=1024,
-        temperature=0.7,
-        n=1,
-        stop=None,
-        timeout=20,
-    )
-    message = response.choices[0].text.strip()
-    return message
+
+
 
 # Get user input
-question = st.text_input("Ask a question or describe your situation below, and then press Enter.")
-
-# Generate chat response
-if question:
-    prompt = generate_prompt(question)
-    message = generate_chat_response(prompt)
-    st.write("Bhagvad Gita says: ", message)
 
 
-def clear_text(textInput):
-
-    st.session_state[textInput] = ""
-
-def generate_response_davinci(question):
-    response = openai.Completion.create(
-        model="text-davinci-003",
-        prompt=generate_prompt(question),
-        temperature=0.6,
-        max_tokens=2048
-    )
-    return response.choices[0].text
-
-def get_text():
-    input_text = st.text_input("Hello, ask me a question about life and philosophy.",placeholder="Type Your question here.", key=txtInputQuestion)
-    return input_text
-
-def page_setup(title, icon):
-    st.set_page_config(
-        page_title=title,
-        page_icon=icon,
-        layout='centered',
-        initial_sidebar_state='auto',
-        menu_items={
-            'About': 'About your application: **This is Bhagvad Gita GPT, a simple ChatGPT use case demo to show how one can easily leverage openAI APIs to create intelligent conversational experiences related to a specific topic.**'
-        }
-    )
-    st.sidebar.title('Creators :')
-    st.sidebar.markdown('PRIYAL KHURANA')
-    st.sidebar.write("DIVYANSH KUMAR")
-    st.sidebar.write("MITALI CHAUDHARY")
 
     
 if __name__ == '__main__':
