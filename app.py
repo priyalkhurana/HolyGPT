@@ -3,28 +3,21 @@ import numpy as np
 import openai
 import pinecone
 import streamlit as st
-import secrets as secrets
 import time
-import os
-import toml
-
-secrets = toml.load('secrets.toml')
-#api_key = secrets['openai.api_key']['pinecone_api_key']
-with open('secrets.toml', 'r') as f:
-    secrets = toml.load(f)
-
-# Get the OpenAI and Pinecone API keys from the secrets dictionary
-openai_api_key = secrets['openai']['openai_api_key']
-pinecone_api_key = secrets['pinecone']['pinecone_api_key']
-
-pinecone.init(api_key=pinecone_api_key, environment='us-west4-gcp')
-
-openai.api_key = openai_api_key
+# from langchain.llms import OpenAI
+# from langchain.callbacks.base import CallbackManager
+# from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 
 
-index_name = 'holygpt'
+pinecone_api_key = st.secrets["pinecone_api_key"]
+pinecone.init(
+    api_key=pinecone_api_key, 
+              environment='us-east1-gcp')
 
+index_name = 'bhagvad-gita-recovered'
+
+# check if index already exists (it shouldn't if this is first time)
 if index_name not in pinecone.list_indexes():
     # if does not exist, create index
     pinecone.create_index(
@@ -34,7 +27,7 @@ if index_name not in pinecone.list_indexes():
     )
 st.session_state_index = pinecone.Index(index_name)
 
-
+openai.api_key=st.secrets['openai_api_key']
 
 
 df_index=pd.read_csv('only_verses.csv')
@@ -42,24 +35,13 @@ df_index=pd.read_csv('only_verses.csv')
 st.write("""
 # GitaGPT
 """)
-def page_setup(title, icon):
-    st.set_page_config(
-        page_title=title,
-        page_icon=icon,
-        layout='centered',
-        initial_sidebar_state='auto',
-        menu_items={
-            'About': 'About your application: **This is Bhagvad Gita GPT, a simple ChatGPT use case demo to show how one can easily leverage openAI APIs to create intelligent conversational experiences related to a specific topic.**'
-        }
-    )
-    st.sidebar.title('Creators :')
-    st.sidebar.markdown('minor')
-    st.sidebar.write("pk dk mc")
+
+# st.markdown('**:red[The vector database is currently down due to an issue related to the hosting company,Pinecone. Please come back later to try the app.]**')
 
 st.write('''If you could ask Bhagavad Gita a question, what would it be?''')
 st.markdown('\n')
 st.markdown('\n')
-def get_embedding(text, model="text-gpt-2"):
+def get_embedding(text, model="text-embedding-ada-002"):
    text = text.replace("\n", " ")
    return openai.Embedding.create(input = [text], model=model)['data'][0]['embedding']
 
@@ -117,7 +99,7 @@ def return_all_verses(retries=6):
                 continue
                
 
-question=st.text_input("*How are you feeling? Ask a question or describe your situation below, and then press Enter.*",'',placeholder='Type your question here')
+question=st.text_input("**How are you feeling? Ask a question or describe your situation below, and then press Enter.**",'',placeholder='Type your question here')
 # if st.button('Enter'):
 if question != '':
     output = st.empty()
